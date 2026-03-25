@@ -1,0 +1,103 @@
+﻿@model ECommereceBookStore.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-5">
+        <div class="card shadow-lg border-0" style="border-radius:15px;">
+
+            <div class="card-header text-white text-center py-4"
+                 style="background:linear-gradient(135deg,#1a1a2e,#e94560);
+                        border-radius:15px 15px 0 0;">
+                <i class="fas fa-user-circle fa-3x mb-2 d-block"></i>
+                <h3 class="mb-0 fw-bold">Welcome Back!</h3>
+                <p class="mb-0 opacity-75">Login to your account</p>
+            </div>
+
+            <div class="card-body p-4">
+                <form asp-controller="Account" asp-action="Login" method="post">
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values
+                                                    .SelectMany(v => v.Errors))
+                            {
+                                <p class="mb-0">@error.ErrorMessage</p>
+                            }
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-envelope me-1 text-primary"></i>Email
+                        </label>
+                        <input asp-for="Email"
+                               class="form-control form-control-lg"
+                               placeholder="Enter your email" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-lock me-1 text-primary"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input asp-for="Password"
+                                   class="form-control form-control-lg"
+                                   placeholder="Enter your password"
+                                   id="loginPass" />
+                            <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePass('loginPass','eye1')">
+                                <i class="fas fa-eye" id="eye1"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4 form-check">
+                        <input asp-for="RememberMe" class="form-check-input" />
+                        <label asp-for="RememberMe" class="form-check-label">
+                            Remember me
+                        </label>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-lg w-100 text-white fw-bold"
+                            style="background:linear-gradient(135deg,#e94560,#1a1a2e);">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </button>
+                </form>
+            </div>
+
+            <div class="card-footer text-center py-3 bg-light"
+                 style="border-radius:0 0 15px 15px;">
+                <p class="mb-0">
+                    Don't have an account?
+                    <a asp-controller="Account" asp-action="Register"
+                       class="text-danger fw-bold text-decoration-none">
+                        Register here
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePass(inputId, iconId) {
+            var input = document.getElementById(inputId);
+            var icon  = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye','fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash','fa-eye');
+            }
+        }
+    </script>
+}

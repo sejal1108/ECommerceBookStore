@@ -1,0 +1,150 @@
+﻿@model ECommereceBookStore.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow-lg border-0" style="border-radius:15px;">
+
+            <div class="card-header text-white text-center py-4"
+                 style="background:linear-gradient(135deg,#1a1a2e,#e94560);
+                        border-radius:15px 15px 0 0;">
+                <i class="fas fa-user-plus fa-3x mb-2 d-block"></i>
+                <h3 class="mb-0 fw-bold">Create Account</h3>
+                <p class="mb-0 opacity-75">Join our bookstore today</p>
+            </div>
+
+            <div class="card-body p-4">
+                <form asp-controller="Account" asp-action="Register" method="post">
+                    @Html.AntiForgeryToken()
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger">
+                            @foreach (var error in ViewData.ModelState.Values
+                                                    .SelectMany(v => v.Errors))
+                            {
+                                <p class="mb-0">@error.ErrorMessage</p>
+                            }
+                        </div>
+                    }
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-user me-1 text-primary"></i>Full Name
+                        </label>
+                        <input asp-for="FullName"
+                               class="form-control form-control-lg"
+                               placeholder="Enter your full name" />
+                        <span asp-validation-for="FullName" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-envelope me-1 text-primary"></i>Email
+                        </label>
+                        <input asp-for="Email"
+                               class="form-control form-control-lg"
+                               placeholder="Enter your email" />
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-lock me-1 text-primary"></i>Password
+                        </label>
+                        <div class="input-group">
+                            <input asp-for="Password"
+                                   class="form-control form-control-lg"
+                                   placeholder="Min 6 characters"
+                                   id="regPass" />
+                            <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePass('regPass','eye2')">
+                                <i class="fas fa-eye" id="eye2"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-lock me-1 text-primary"></i>Confirm Password
+                        </label>
+                        <div class="input-group">
+                            <input asp-for="ConfirmPassword"
+                                   class="form-control form-control-lg"
+                                   placeholder="Re-enter password"
+                                   id="regConfirm" />
+                            <button class="btn btn-outline-secondary" type="button"
+                                    onclick="togglePass('regConfirm','eye3')">
+                                <i class="fas fa-eye" id="eye3"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                    </div>
+
+                    @* <div class="mb-4">
+                        <div class="progress mb-1" style="height:6px;">
+                            <div id="strengthBar" class="progress-bar"
+                                 role="progressbar" style="width:0%"></div>
+                        </div>
+                        <small id="strengthText" class="text-muted">
+                            Enter password to check strength
+                        </small>
+                    </div> *@
+
+                    <button type="submit"
+                            class="btn btn-lg w-100 text-white fw-bold"
+                            style="background:linear-gradient(135deg,#e94560,#1a1a2e);">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+                </form>
+            </div>
+
+            <div class="card-footer text-center py-3 bg-light"
+                 style="border-radius:0 0 15px 15px;">
+                <p class="mb-0">
+                    Already have an account?
+                    <a asp-controller="Account" asp-action="Login"
+                       class="text-danger fw-bold text-decoration-none">
+                        Login here
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePass(inputId, iconId) {
+            var input = document.getElementById(inputId);
+            var icon  = document.getElementById(iconId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye','fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash','fa-eye');
+            }
+        }
+
+        // document.getElementById('regPass').addEventListener('input', function () {
+        //     var val      = this.value;
+        //     var bar      = document.getElementById('strengthBar');
+        //     var text     = document.getElementById('strengthText');
+        //     var strength = 0;
+        //     if (val.length >= 6)           strength++;
+        //     if (val.length >= 10)          strength++;
+        //     if (/[A-Z]/.test(val))         strength++;
+        //     if (/[0-9]/.test(val))         strength++;
+        //     if (/[^A-Za-z0-9]/.test(val))  strength++;
+        //     var colors = ['','bg-danger','bg-warning','bg-info','bg-primary','bg-success'];
+        //     var labels = ['','Very Weak','Weak','Fair','Strong','Very Strong'];
+        //     bar.style.width   = (strength * 20) + '%';
+        //     bar.className     = 'progress-bar ' + (colors[strength] || '');
+        //     text.textContent  = labels[strength] || '';
+        // });
+    </script>
+}

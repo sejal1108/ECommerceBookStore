@@ -1,0 +1,59 @@
+﻿@model ECommereceBookStore.Models.Book
+@{
+    ViewData["Title"] = "Book Details";
+}
+
+<div class="row g-5">
+    <div class="col-md-4 text-center">
+        <img src="@Model.ImageUrl" class="img-fluid rounded shadow"
+             style="max-height:400px;object-fit:contain;"
+             onerror="this.src='https://via.placeholder.com/250x350?text=No+Image'"
+             alt="@Model.Title" />
+    </div>
+    <div class="col-md-8">
+        <h2 class="fw-bold">@Model.Title</h2>
+        <p class="text-muted fs-5"><i class="fas fa-user me-2"></i>@Model.Author</p>
+        <span class="badge bg-primary fs-6 mb-3">@Model.Category</span>
+        <h3 class="text-danger fw-bold">₹@Model.Price</h3>
+        <p class="text-muted">
+            <i class="fas fa-box me-1"></i>
+            @(Model.Stock > 0 ? $"{Model.Stock} in stock" : "Out of stock")
+        </p>
+        <hr />
+        <p class="lead">@Model.Description</p>
+        <hr />
+        <div class="d-flex gap-3 flex-wrap mt-4">
+            @if (User.Identity.IsAuthenticated)
+            {
+                <form asp-controller="Cart" asp-action="AddToCart" method="post">
+                    <input type="hidden" name="bookId" value="@Model.Id" />
+                    <input type="hidden" name="quantity" value="1" />
+                    <button type="submit" class="btn btn-danger btn-lg px-5">
+                        <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                    </button>
+                </form>
+            }
+            else
+            {
+                <a asp-controller="Account" asp-action="Login"
+                   class="btn btn-danger btn-lg px-5">
+                    <i class="fas fa-cart-plus me-2"></i>Add to Cart
+                </a>
+            }
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id"
+                   class="btn btn-warning btn-lg">
+                    <i class="fas fa-edit me-2"></i>Edit
+                </a>
+                <a asp-action="Delete" asp-route-id="@Model.Id"
+                   class="btn btn-outline-danger btn-lg">
+                    <i class="fas fa-trash me-2"></i>Delete
+                </a>
+            }
+            <a asp-action="Index" class="btn btn-outline-secondary btn-lg">
+                <i class="fas fa-arrow-left me-2"></i>Back
+            </a>
+        </div>
+    </div>
+</div>

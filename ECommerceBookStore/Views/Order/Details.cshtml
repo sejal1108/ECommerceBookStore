@@ -1,0 +1,52 @@
+﻿@model ECommereceBookStore.Models.Order
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<div class="container mt-4" style="max-width:700px">
+    <h2 class="fw-bold mb-1">Order #@Model.Id</h2>
+    <p class="text-muted">Placed on @Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</p>
+
+    <span class="badge fs-6 mb-3 @(Model.Status == "Pending" ? "bg-warning text-dark" :
+                                               Model.Status == "Delivered" ? "bg-success" : "bg-info")">
+        @Model.Status
+    </span>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <table class="table align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Book</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderItems)
+                    {
+                        <tr>
+                            <td>@item.Book?.Title</td>
+                            <td>@item.Quantity</td>
+                            <td>₹@item.Price</td>
+                            <td>₹@(item.Price* item.Quantity)</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-end fw-bold">Total:</td>
+                        <td class="fw-bold text-danger fs-5">₹@Model.TotalAmount</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <a asp-action="MyOrders" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Orders
+    </a>
+</div>
+
+

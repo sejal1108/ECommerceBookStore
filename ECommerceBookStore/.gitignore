@@ -1,0 +1,11 @@
+﻿# Ignore Visual Studio files
+.vs/
+
+# Ignore build and package directories
+bin/
+obj/
+node_modules/
+
+# Ignore system files (macOS/Windows)
+.DS_Store
+Thumbs.db
