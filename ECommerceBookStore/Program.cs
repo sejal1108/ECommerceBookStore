@@ -1,8 +1,8 @@
-﻿
+﻿using System;
+using System.Linq;
 using ECommereceBookStore.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,12 +22,20 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = "/Account/Login";
 });
 
+// 4. MVC + Razor Pages (include Razor Pages in case your project uses them)
 builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
-// 4. Seed roles — wrapped in try/catch to prevent crash
+// 5. Seed roles — wrapped in try/catch to prevent crash
 await SeedRolesAsync(app);
+
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -38,6 +46,8 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.MapRazorPages();
 
 app.Run();
 
@@ -76,9 +86,8 @@ static async Task SeedRolesAsync(WebApplication app)
         if (!await userManager.IsInRoleAsync(adminUser, "Admin"))
             await userManager.AddToRoleAsync(adminUser, "Admin");
 
-        // ✅ Also assign YOUR registered email as Admin
-        // Replace with the email you use to login
-        var myEmail = "patil455@gmail.com"; // 👈 CHANGE THIS
+        // Also assign YOUR registered email as Admin (change this)
+        var myEmail = "patil455@gmail.com";
         var myUser = await userManager.FindByEmailAsync(myEmail);
         if (myUser != null && !await userManager.IsInRoleAsync(myUser, "Admin"))
             await userManager.AddToRoleAsync(myUser, "Admin");
