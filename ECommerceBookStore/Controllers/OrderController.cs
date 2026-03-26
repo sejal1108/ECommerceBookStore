@@ -1,45 +1,93 @@
-﻿using ECommereceBookStore.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Security.Claims;
+using ECommereceBookStore.Data;
+using ECommereceBookStore.Models;
 
-namespace ECommereceBookStore.Controllers
+[Authorize] // ✅ user must login
+public class OrderController : Controller
 {
-    [Authorize]
-    public class OrderController : Controller
+    private readonly ApplicationDbContext _context;
+
+    public OrderController(ApplicationDbContext context)
     {
-        private readonly AppDbContext _context;
-        private readonly UserManager<AppUser> _userManager;
+        _context = context;
+    }
 
-        public OrderController(AppDbContext context, UserManager<AppUser> userManager)
+    // ✅ CREATE PAGE
+    public IActionResult Create()
+    {
+        return View();
+    }
+
+    // ✅ SAVE ORDER (FROM CART)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult CreateOrder()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var cartItems = _context.CartItems
+            .Include(c => c.Book)
+            .Where(c => c.UserId == userId)
+            .ToList();
+
+        if (cartItems == null || !cartItems.Any())
         {
-            _context = context;
-            _userManager = userManager;
+            return RedirectToAction("Index", "Cart");
         }
 
-        // GET: /Order/MyOrders
-        public async Task<IActionResult> MyOrders()
+        var order = new Order
         {
-            var userId = _userManager.GetUserId(User);
-            var orders = await _context.Orders
-                .Include(o => o.OrderItems).ThenInclude(i => i.Book)
-                .Where(o => o.UserId == userId)
-                .OrderByDescending(o => o.OrderDate)
-                .ToListAsync();
-            return View(orders);
+            UserId = userId,
+            OrderDate = DateTime.Now,
+            Status = "Pending",
+            TotalAmount = cartItems.Sum(c => c.Book.Price * c.Quantity),
+            OrderItems = cartItems.Select(c => new OrderItem
+            {
+                BookId = c.BookId,
+                Quantity = c.Quantity,
+                Price = c.Book.Price
+            }).ToList()
+        };
+
+        _context.Orders.Add(order);
+        _context.CartItems.RemoveRange(cartItems);
+        _context.SaveChanges();
+
+        return RedirectToAction("MyOrders");
+    }
+
+    // ✅ USER ORDER LIST
+    public IActionResult MyOrders()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var orders = _context.Orders
+            .Where(o => o.UserId == userId)
+            .OrderByDescending(o => o.OrderDate)
+            .ToList();
+
+        return View(orders);
+    }
+
+    // ✅ ORDER DETAILS (IMPORTANT FIX)
+    public IActionResult Details(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        var order = _context.Orders
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Book)
+            .FirstOrDefault(o => o.Id == id && o.UserId == userId);
+
+        if (order == null)
+        {
+            return NotFound();
         }
 
-        // GET: /Order/Details/5
-        public async Task<IActionResult> Details(int id)
-        {
-            var userId = _userManager.GetUserId(User);
-            var order = await _context.Orders
-                .Include(o => o.OrderItems).ThenInclude(i => i.Book)
-                .FirstOrDefaultAsync(o => o.Id == id && o.UserId == userId);
-
-            if (order == null) return NotFound();
-            return View(order);
-        }
+        return View(order);
     }
 }

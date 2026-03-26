@@ -1,25 +1,19 @@
-using ECommereceBookStore.Models;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Linq;
+using ECommereceBookStore.Data;
 
-namespace ECommereceBookStore.Controllers
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    private readonly ApplicationDbContext _context;
+
+    public HomeController(ApplicationDbContext context)
     {
-        private readonly AppDbContext _context;
+        _context = context;
+    }
 
-        public HomeController(AppDbContext context)
-        {
-            _context = context;
-        }
-
-        public async Task<IActionResult> Index()
-        {
-            var books = await _context.Books
-                .OrderByDescending(b => b.Id)
-                .Take(8)
-                .ToListAsync();
-            return View(books);
-        }
+    public IActionResult Index()
+    {
+        var books = _context.Books.ToList(); // ✅ load data
+        return View(books);
     }
 }

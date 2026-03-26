@@ -1,52 +1,173 @@
 ﻿@model ECommereceBookStore.Models.Order
 @{
-    ViewData["Title"] = "Order Details";
+    ViewData["Title"] = $"Order #{Model?.Id}";
+
+    var badgeClass = Model?.Status switch
+    {
+        "Pending" => "warning",
+        "Processing" => "info",
+        "Shipped" => "primary",
+        "Delivered" => "success",
+        "Cancelled" => "danger",
+        _ => "secondary"
+    };
 }
 
-<div class="container mt-4" style="max-width:700px">
-    <h2 class="fw-bold mb-1">Order #@Model.Id</h2>
-    <p class="text-muted">Placed on @Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</p>
-
-    <span class="badge fs-6 mb-3 @(Model.Status == "Pending" ? "bg-warning text-dark" :
-                                               Model.Status == "Delivered" ? "bg-success" : "bg-info")">
-        @Model.Status
-    </span>
-
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <table class="table align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Book</th>
-                        <th>Qty</th>
-                        <th>Unit Price</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var item in Model.OrderItems)
-                    {
-                        <tr>
-                            <td>@item.Book?.Title</td>
-                            <td>@item.Quantity</td>
-                            <td>₹@item.Price</td>
-                            <td>₹@(item.Price* item.Quantity)</td>
-                        </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="3" class="text-end fw-bold">Total:</td>
-                        <td class="fw-bold text-danger fs-5">₹@Model.TotalAmount</td>
-                    </tr>
-                </tfoot>
-            </table>
-        </div>
-    </div>
-
-    <a asp-action="MyOrders" class="btn btn-outline-secondary">
-        <i class="fas fa-arrow-left me-1"></i>Back to Orders
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+        <i class="fas fa-receipt me-2 text-info"></i>Order #@Model?.Id
+    </h2>
+    <a asp-action="MyOrders" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i>My Orders
     </a>
 </div>
 
+<!-- Status Progress Bar -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-4">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            @{
+                var allStatuses = new[] { "Pending", "Processing", "Shipped", "Delivered" };
+                var currentIndex = Array.IndexOf(allStatuses, Model?.Status);
+            }
 
+            @foreach (var s in allStatuses)
+            {
+                var idx = Array.IndexOf(allStatuses, s);
+                var isActive = idx <= currentIndex && Model?.Status != "Cancelled";
+
+                <div class="text-center flex-fill">
+                    <div class="rounded-circle mx-auto mb-1 d-flex align-items-center justify-content-center"
+                         style="width:36px;height:36px;
+                             background:@(isActive ? "#0d6efd" : "#e9ecef");
+                             color:@(isActive ? "white" : "#adb5bd");">
+
+                        <i class="fas fa-@(s == "Pending" ? "clock" :
+                                                                      s == "Processing" ? "cog" :
+                                                                      s == "Shipped" ? "truck" : "check") small"></i>
+                </div>
+
+                    <small class="@(isActive ? "text-primary fw-bold" : "text-muted")">@s</small>
+                </div>
+
+            @if (idx < allStatuses.Length - 1)
+                {
+                    <div class="flex-fill border-top mt-2 mx-1"
+                         style="height:2px;
+                                 background:@(idx < currentIndex && Model?.Status != "Cancelled" ? "#0d6efd" : "#e9ecef");">
+                    </div>
+                }
+            }
+        </div>
+
+        @if (Model?.Status == "Cancelled")
+        {
+            <div class="text-center mt-2">
+                <span class="badge bg-danger fs-6">Order Cancelled</span>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- Order Summary -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white fw-bold border-bottom">Order Summary</div>
+
+            <div class="card-body">
+                <table class="table table-borderless mb-0 small">
+
+                    <tr>
+                        <td class="text-muted">Order Date</td>
+                        <td class="fw-semibold">
+                            @Model?.OrderDate.ToString("dd MMM yyyy")
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="text-muted">Status</td>
+                        <td>
+                            <span class="badge bg-@badgeClass">@Model?.Status</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="text-muted">Shipping To</td>
+                        <td>@(Model?.ShippingAddress ?? "Not provided")</td>
+                    </tr>
+
+                    <tr class="border-top">
+                        <td class="text-muted fw-bold">Total</td>
+                        <td class="fw-bold text-success fs-5">
+                            ₹@Model?.TotalAmount.ToString("N2")
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items -->
+    <div class="col-md-8">
+        <div class="card border-0 shadow-sm">
+
+            <div class="card-header bg-white fw-bold border-bottom">
+                Items in this Order (@(Model?.OrderItems?.Count ?? 0))
+            </div>
+
+            <div class="card-body p-0">
+
+                @if (Model?.OrderItems != null && Model.OrderItems.Any())
+                {
+                    foreach (var item in Model.OrderItems)
+                    {
+                        <div class="d-flex align-items-center gap-3 p-3 border-bottom">
+
+                            <img src="@item.Book?.ImageUrl"
+                                 alt="@item.Book?.Title"
+                                 style="width:60px;height:75px;object-fit:contain;"
+                                 onerror="this.src='https://via.placeholder.com/60x75?text=Book'" />
+
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 fw-bold">@item.Book?.Title</h6>
+                                <small class="text-muted">
+                                    by @item.Book?.Author
+                                </small>
+                            </div>
+
+                            <div class="text-end">
+                                <div class="text-muted small">
+                                    ₹@item.Price.ToString("N2") x @item.Quantity
+                                </div>
+
+                                <!-- ✅ FIXED -->
+                                <div class="fw-bold text-success">
+                                    ₹@((item.Price * item.Quantity).ToString("N2"))
+                                </div>
+                            </div>
+
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="p-3 text-center text-muted">
+                        No items found in this order
+                    </div>
+                }
+
+                <div class="d-flex justify-content-between p-3 fw-bold">
+                    <span>Total</span>
+                    <span class="text-success fs-5">
+                        ₹@Model?.TotalAmount.ToString("N2")
+                    </span>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>

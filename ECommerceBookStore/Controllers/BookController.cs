@@ -1,4 +1,5 @@
-﻿using ECommereceBookStore.Models;
+﻿using ECommereceBookStore.Data;
+using ECommereceBookStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,9 +11,9 @@ namespace ECommerceBookStore.Controllers
 
     public class BookController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly ApplicationDbContext _context;
 
-        public BookController(AppDbContext context)
+        public BookController(ApplicationDbContext context)
         {
             _context = context;
         }

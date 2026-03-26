@@ -1,4 +1,5 @@
-﻿using ECommereceBookStore.Models;
+﻿using ECommereceBookStore.Data;
+using ECommereceBookStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,10 +10,10 @@ namespace ECommereceBookStore.Controllers
     [Authorize]
     public class CartController : Controller
     {
-        private readonly AppDbContext _context;
-        private readonly UserManager<AppUser> _userManager;
+        private readonly ApplicationDbContext _context;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public CartController(AppDbContext context, UserManager<AppUser> userManager)
+        public CartController(ApplicationDbContext context, UserManager<ApplicationUser> userManager)
         {
             _context = context;
             _userManager = userManager;

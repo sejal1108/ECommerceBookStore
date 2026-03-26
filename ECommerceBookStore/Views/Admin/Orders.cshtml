@@ -1,0 +1,138 @@
+﻿@model IEnumerable<ECommereceBookStore.Models.Order>
+@{
+    ViewData["Title"] = "Manage Orders";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold">
+        <i class="fas fa-shopping-bag me-2 text-primary"></i>Order Management
+    </h2>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+        <i class="fas fa-arrow-left me-1"></i>Dashboard
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Status Filter Tabs -->
+<div class="mb-4">
+    <a asp-action="Orders"
+       class="btn btn-sm me-1 btn-outline-secondary">All Orders</a>
+    <a asp-action="Orders" asp-route-statusFilter="Pending"
+       class="btn btn-sm me-1 btn-outline-warning">Pending</a>
+    <a asp-action="Orders" asp-route-statusFilter="Processing"
+       class="btn btn-sm me-1 btn-outline-info">Processing</a>
+    <a asp-action="Orders" asp-route-statusFilter="Shipped"
+       class="btn btn-sm me-1 btn-outline-primary">Shipped</a>
+    <a asp-action="Orders" asp-route-statusFilter="Delivered"
+       class="btn btn-sm me-1 btn-outline-success">Delivered</a>
+    <a asp-action="Orders" asp-route-statusFilter="Cancelled"
+       class="btn btn-sm me-1 btn-outline-danger">Cancelled</a>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th class="ps-3">Order #</th>
+                    <th>Customer</th>
+                    <th>Date</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Update Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-5 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>No orders found.
+                        </td>
+                    </tr>
+                }
+
+                @foreach (var order in Model)
+                {
+                    string badge = "secondary";
+                    if (order.Status == "Pending") { badge = "warning"; }
+                    if (order.Status == "Processing") { badge = "info"; }
+                    if (order.Status == "Shipped") { badge = "primary"; }
+                    if (order.Status == "Delivered") { badge = "success"; }
+                    if (order.Status == "Cancelled") { badge = "danger"; }
+
+                    <tr>
+                        <td class="ps-3 fw-bold">#@order.Id</td>
+
+                        <td>
+                            <span class="fw-semibold">@order.User?.FullName</span><br />
+                            <small class="text-muted">@order.User?.Email</small>
+                        </td>
+
+                        <td>
+                            @order.OrderDate.ToString("dd MMM yyyy")<br />
+                            <small class="text-muted">@order.OrderDate.ToString("hh:mm tt")</small>
+                        </td>
+
+                        <td>
+                            <span class="badge bg-secondary">
+                                @order.OrderItems.Count item(s)
+                            </span>
+                        </td>
+
+                        <td class="fw-bold text-success">
+                            &#8377;@order.TotalAmount.ToString("N2")
+                        </td>
+
+                        <td>
+                            <span class="badge bg-@badge fs-6">@order.Status</span>
+                        </td>
+
+                        <!-- ✅ Status update: plain HTML form + Html.Raw select = zero tag helpers = zero RZ1031 -->
+                        <td>
+                            <form method="post" action="/Admin/UpdateStatus">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@order.Id" />
+                                @{
+                                    var allStatuses = new[] { "Pending", "Processing", "Shipped", "Delivered", "Cancelled" };
+                                    var optionsHtml = "";
+                                    foreach (var st in allStatuses)
+                                    {
+                                        var sel = (order.Status == st) ? " selected=\"selected\"" : "";
+                                        optionsHtml += $"<option value=\"{st}\"{sel}>{st}</option>";
+                                    }
+                                    var selectHtml = $"<select name=\"newStatus\" class=\"form-select form-select-sm\" style=\"min-width:130px;\" onchange=\"this.form.submit()\">{optionsHtml}</select>";
+                                }
+                                @Html.Raw(selectHtml)
+                            </form>
+                        </td>
+
+                        <td>
+                            <a asp-action="OrderDetails" asp-route-id="@order.Id"
+                               class="btn btn-sm btn-outline-info me-1">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <form method="post" action="/Admin/DeleteOrder" class="d-inline"
+                                  onsubmit="return confirm('Delete Order #@order.Id? This cannot be undone.')">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@order.Id" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
