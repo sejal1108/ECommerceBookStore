@@ -6,67 +6,40 @@
 
 <div class="row justify-content-center">
     <div class="col-md-8">
-        <h2 class="fw-bold mb-4"><i class="fas fa-credit-card me-2 text-primary"></i>Checkout</h2>
+        <h2>Checkout</h2>
 
-        @if (TempData["Error"] != null)
+        <form asp-controller="Order" asp-action="PlaceOrder" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- ✅ VERY IMPORTANT -->
+            <div class="mb-3">
+                <label class="form-label">Shipping Address</label>
+
+                <textarea name="shippingAddress"
+                          class="form-control"
+                          rows="4"
+                          required>
+        </textarea>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">
+                Place Order ₹@total
+            </button>
+        </form>
+
+        <hr />
+
+        <h4>Order Summary</h4>
+
+        @foreach (var item in cartItems!)
         {
-            <div class="alert alert-danger">@TempData["Error"]</div>
+            <div>
+                @item.Book?.Title -
+                Qty: @item.Quantity -
+                ₹@(item.Book!.Price * item.Quantity)
+            </div>
         }
 
-        <div class="row g-4">
-            <!-- Shipping Form -->
-            <div class="col-md-7">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white fw-bold border-bottom">
-                        <i class="fas fa-map-marker-alt me-2 text-danger"></i>Shipping Address
-                    </div>
-                    <div class="card-body">
-                        <form asp-controller="Order" asp-action="PlaceOrder" method="post">
-                            @Html.AntiForgeryToken()
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Full Shipping Address</label>
-                                <textarea name="shippingAddress" class="form-control" rows="4"
-                                          placeholder="House/Flat No, Street, City, State, PIN Code"
-                                          required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-danger btn-lg w-100 fw-bold"
-                                    onclick="return confirm('Confirm your order for ₹@total.ToString("N2")?')">
-                                <i class="fas fa-check-circle me-2"></i>Place Order — ₹@total.ToString("N2")
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Order Summary -->
-            <div class="col-md-5">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white fw-bold border-bottom">
-                        <i class="fas fa-receipt me-2 text-info"></i>Order Summary
-                    </div>
-                    <div class="card-body p-0">
-                        @foreach (var item in cartItems!)
-                        {
-                            <div class="d-flex align-items-center gap-2 p-3 border-bottom">
-                                <img src="@item.Book?.ImageUrl" style="width:40px;height:50px;object-fit:contain;"
-                                     onerror="this.src='https://via.placeholder.com/40x50?text=Book'" />
-                                <div class="flex-grow-1">
-                                    <div class="fw-semibold small">@item.Book?.Title</div>
-                                    <small class="text-muted">x@item.Quantity</small>
-                                </div>
-                                <div class="fw-bold small">₹@((item.Book!.Price * item.Quantity).ToString("N2"))</div>
-                            </div>
-                        }
-                        <div class="p-3 d-flex justify-content-between fw-bold fs-5">
-                            <span>Total</span>
-                            <span class="text-success">₹@total.ToString("N2")</span>
-                        </div>
-                    </div>
-                </div>
-                <a asp-controller="Cart" asp-action="Index" class="btn btn-outline-secondary w-100 mt-2">
-                    <i class="fas fa-arrow-left me-1"></i>Back to Cart
-                </a>
-            </div>
-        </div>
+        <h5>Total: ₹@total</h5>
     </div>
 </div>
